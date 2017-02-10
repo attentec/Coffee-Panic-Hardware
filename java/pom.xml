@@ -16,6 +16,11 @@
         <descriptorRefs>
           <descriptorRef>jar-with-dependencies</descriptorRef>
         </descriptorRefs>
+        <archive>
+          <manifest>
+            <mainClass>com.attentec.coffeepanic.App</mainClass>
+          </manifest>
+        </archive>
       </configuration>
       <executions>
         <execution>
@@ -45,6 +50,6 @@
     <groupId>org.usb4java</groupId>
     <artifactId>usb4java-javax</artifactId>
     <version>1.2.0</version>
-  </dependency>   
+  </dependency>
   </dependencies>
 </project>

@@ -18,15 +18,14 @@ import java.util.List;
 
 public class UsbService {
     public UsbInterface getDeviceInterface(UsbDevice device, int index) {
-
         UsbConfiguration configuration = device.getActiveUsbConfiguration();
         UsbInterface iface = (UsbInterface) configuration.getUsbInterfaces().get(index); // there can be more 1,2,3..
 
         return iface;
     }
-    public void readMessage(UsbInterface iface,
-                            int endPoint){
 
+    public Message readMessage(UsbInterface iface,
+                               int endPoint){
         UsbPipe pipe = null;
 
         try {
@@ -42,12 +41,13 @@ public class UsbService {
 
             byte[] data = new byte[8];
             int received = pipe.syncSubmit(data);
-            System.out.println(received + " bytes received");
+            Message message = new Message(data);
 
             pipe.close();
-
+            return message;
         } catch (Exception ex) {
             ex.printStackTrace();
+            return null;
         } finally {
             try {
                 iface.release();
@@ -61,25 +61,22 @@ public class UsbService {
                 e.printStackTrace();
             }
         }
-
     }
+
     public UsbDevice getUsbRootHoob() {
+        try {
+            final UsbServices services = UsbHostManager.getUsbServices();
+            return services.getRootUsbHub();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (UsbException e) {
+            e.printStackTrace();
+        }
 
-    try {
-        final UsbServices services = UsbHostManager.getUsbServices();
-        return services.getRootUsbHub();
-    } catch (SecurityException e) {
-        e.printStackTrace();
-    } catch (UsbException e) {
-        e.printStackTrace();
+        return null;
     }
-
-    return null;
-}
-
 
     public UsbDevice findDevice(short vendorId, short productId) {
-
         return findDevice((UsbHub) getUsbRootHoob(), vendorId, productId);
     }
 
