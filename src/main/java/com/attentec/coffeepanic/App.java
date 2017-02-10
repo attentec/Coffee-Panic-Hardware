@@ -1,24 +1,43 @@
 package com.attentec.coffeepanic;
 
-import javax.usb.UsbDevice;
-import javax.usb.UsbException;
-import java.io.UnsupportedEncodingException;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
-public class App
+public final class App
 {
-    private static float ALERT_AT_GRAMS = 100;
-    private static float STABLE_THRESHOLD = 5;
+    private static final float ALERT_AT_GRAMS = 100;
+    private static final float STABLE_THRESHOLD = 5;
 
-    public static void main( String[] args )
-    {
-        UsbService sc = new UsbService();
-        UsbDevice device = sc.findDevice((short) 0x0922, (short)0x8003);
+    public static void main( String[] args ) {
+        Logger logger = LogManager.getLogger();
 
-        float lastGrams = 0.0f;
-        Message message = sc.readMessage(sc.getDeviceInterface(device,0), 0);
+        while (true) {
+            try {
+                connectAndRun();
+            } catch (Exception e) {
+                logger.error("Exception in main loop:", e);
+                sleep(5);
+            }
+        }
+    }
 
-        if (message.isStable()) {
-            float grams = message.getGrams();
+    private static void connectAndRun() throws ScaleException {
+        ScaleLocator locator = new UsbScaleLocator();
+        float lastGrams = 0;
+
+        try (Scale scale = locator.findFirst()){
+            while (true) {
+                lastGrams = measure(scale, lastGrams);
+                sleep(2);
+            }
+        }
+    }
+
+    private static float measure(Scale scale, float lastGrams) throws ScaleException {
+        Measurement measurement = scale.measure();
+
+        if (measurement.isStable()) {
+            float grams = measurement.getGrams();
             boolean isStable = Math.abs(grams - lastGrams) < STABLE_THRESHOLD;
 
             if (isStable && grams <= ALERT_AT_GRAMS) {
@@ -26,6 +45,17 @@ public class App
             }
 
             lastGrams = grams;
+            return grams;
+        }
+
+        return lastGrams;
+    }
+
+    private static void sleep(int seconds) {
+        try {
+            Thread.sleep(1000 * seconds);
+        } catch (InterruptedException e) {
+            // Ignore
         }
     }
 }
