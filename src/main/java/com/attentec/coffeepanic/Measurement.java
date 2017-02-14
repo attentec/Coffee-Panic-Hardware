@@ -1,7 +1,7 @@
 package com.attentec.coffeepanic;
 
-interface Measurement {
-    boolean isStable();
+import java.util.Optional;
 
-    float getGrams();
+interface Measurement {
+    Optional<Float> getGrams();
 }

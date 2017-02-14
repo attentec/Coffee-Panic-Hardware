@@ -1,18 +1,14 @@
 package com.attentec.coffeepanic;
 
 import java.util.List;
+import java.util.Optional;
 import javax.usb.*;
 
 final class UsbScale implements Scale {
-    private static int DATA_MODE_GRAMS = 2;
-    private static int DATA_MODE_OUNCES = 11;
-
-    private static float OUNCES_TO_GRAMS = 28.3495231f;
-
     private UsbInterface usbInterface;
     private UsbPipe pipe;
 
-    public UsbScale(UsbInterface usbInterface, UsbPipe pipe) {
+    UsbScale(UsbInterface usbInterface, UsbPipe pipe) {
         this.usbInterface = usbInterface;
         this.pipe = pipe;
     }
@@ -32,13 +28,8 @@ final class UsbScale implements Scale {
 
             return new Measurement() {
                 @Override
-                public boolean isStable() {
-                    return isStable;
-                }
-
-                @Override
-                public float getGrams() {
-                    return grams;
+                public Optional<Float> getGrams() {
+                    return isStable ? Optional.of(grams) : Optional.empty();
                 }
             };
         } catch (UsbException e) {
@@ -50,9 +41,14 @@ final class UsbScale implements Scale {
         byte mode = data[2];
         float rawWeight = data[4] + (256.0f * (float)data[5]);
 
+        int DATA_MODE_GRAMS = 2;
+        int DATA_MODE_OUNCES = 11;
+
         if (mode == DATA_MODE_OUNCES) {
             float scaleFactor = (float)Math.pow(10.0f, (float)data[3]);
             float ounces = rawWeight * scaleFactor;
+
+            float OUNCES_TO_GRAMS = 28.3495231f;
             return OUNCES_TO_GRAMS * ounces;
         } else if (mode == DATA_MODE_GRAMS) {
             return rawWeight;

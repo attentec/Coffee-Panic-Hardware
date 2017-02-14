@@ -36,19 +36,15 @@ public final class App
     private static float measure(Scale scale, float lastGrams) throws ScaleException {
         Measurement measurement = scale.measure();
 
-        if (measurement.isStable()) {
-            float grams = measurement.getGrams();
+        return measurement.getGrams().map((Float grams) -> {
             boolean isStable = Math.abs(grams - lastGrams) < STABLE_THRESHOLD;
 
             if (isStable && grams <= ALERT_AT_GRAMS) {
                 System.out.println("Low on coffee!");
             }
 
-            lastGrams = grams;
             return grams;
-        }
-
-        return lastGrams;
+        }).orElse(lastGrams);
     }
 
     private static void sleep(int seconds) {
