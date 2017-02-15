@@ -33,5 +33,5 @@ cd "$build_dir"
 git init
 git add .
 git commit --message="Deploying"
-git remote add resin "$@"
+git remote add resin $@
 git push --force resin master # force since it is a new repository
