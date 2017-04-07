@@ -8,7 +8,7 @@ IFS=$'\n\t'
 
 # Usage: deploy.sh <Resin.io Git remote URL>
 build_dir="/tmp/coffee-panic-hardware-build-$$/"
-trap "rm -rf \"$build_dir\"" EXIT
+trap 'rm -rf "$build_dir"' EXIT
 echo "Building in $build_dir"
 
 version="1.0-SNAPSHOT"
@@ -33,5 +33,5 @@ cd "$build_dir"
 git init
 git add .
 git commit --message="Deploying"
-git remote add resin $@
+git remote add resin "$@"
 git push --force resin master # force since it is a new repository
