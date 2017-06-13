@@ -21,7 +21,7 @@ cp "target/m10-scale-${version}-jar-with-dependencies.jar" "${build_dir}/"
 # build directly from the source directory, so the file should not
 # exist there.
 cat <<EOF > "$build_dir/Dockerfile"
-FROM resin/raspberrypi-openjdk:8-jre
+FROM resin/raspberry-pi-openjdk:openjdk-8u40-jre
 
 COPY . /app
 
