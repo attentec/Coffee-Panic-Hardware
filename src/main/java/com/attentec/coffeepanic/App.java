@@ -22,22 +22,19 @@ public final class App
     }
 
     private static void connectAndRun() throws GpioException, ScaleException {
-        GpioPin pin = new GpioPin(2);
-        pin.setDirection(GpioPin.Direction.OUT);
-        pin.setValue(false);
+        GpioPin changeUnit = createOutputPin(2);
+        GpioPin power = createOutputPin(3);
 
         ScaleLocator locator = new UsbScaleLocator();
         float lastGrams = 0;
         int iteration = 0;
 
-        try (Scale scale = locator.findFirst()){
+        try (Scale scale = locator.findFirst()) {
             while (true) {
                 lastGrams = measure(scale, lastGrams);
 
                 if (iteration == 10) {
-                    pin.setValue(true);
-                    sleep(0.5);
-                    pin.setValue(false);
+                    press(changeUnit);
                     iteration = 0;
                 } else {
                     ++iteration;
@@ -45,7 +42,24 @@ public final class App
 
                 sleep(2);
             }
+        } catch (ScaleNotFound e) {
+            press(power);
+            throw e;
         }
+    }
+
+    private static GpioPin createOutputPin(int pin) throws GpioException {
+        GpioPin gpioPin = new GpioPin(pin);
+        gpioPin.setDirection(GpioPin.Direction.OUT);
+        gpioPin.setValue(false);
+
+        return gpioPin;
+    }
+
+    private static void press(GpioPin pin) throws GpioException {
+        pin.setValue(true);
+        sleep(0.5);
+        pin.setValue(false);
     }
 
     private static float measure(Scale scale, float lastGrams) throws ScaleException {
