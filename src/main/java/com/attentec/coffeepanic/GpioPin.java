@@ -3,9 +3,8 @@ package com.attentec.coffeepanic;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public final class GpioPin
-{
-    enum Direction {
+public final class GpioPin {
+    public enum Direction {
         IN,
         OUT,
     }

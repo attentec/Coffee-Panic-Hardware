@@ -3,17 +3,17 @@ package com.attentec.coffeepanic;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-public final class App
-{
+public final class App {
     private static final float ALERT_AT_GRAMS = 100;
     private static final float STABLE_THRESHOLD = 5;
 
     public static void main(String[] args) {
+        Configuration configuration = new EnvironmentConfiguration();
         Logger logger = LogManager.getLogger();
 
         while (true) {
             try {
-                connectAndRun();
+                connectAndRun(configuration, logger);
             } catch (Exception e) {
                 logger.error("Exception in main loop:", e);
                 sleep(5);
@@ -21,7 +21,8 @@ public final class App
         }
     }
 
-    private static void connectAndRun() throws GpioException, ScaleException {
+    private static void connectAndRun(Configuration configuration, Logger logger)
+        throws ConfigurationException, GpioException, HttpException, ScaleException {
         GpioPin changeUnit = createOutputPin(2);
         GpioPin power = createOutputPin(3);
 
@@ -29,9 +30,15 @@ public final class App
         float lastGrams = 0;
         int iteration = 0;
 
-        try (Scale scale = locator.findFirst()) {
+        try (Scale scale = locator.findFirst(); HttpClient client = createHttpClient(configuration)) {
             while (true) {
                 lastGrams = measure(scale, lastGrams);
+
+                try {
+                    client.postMeasurement(lastGrams);
+                } catch (Exception e) {
+                    logger.error("Failed to send measurement", e);
+                }
 
                 if (iteration == 10) {
                     press(changeUnit);
@@ -74,6 +81,10 @@ public final class App
 
             return grams;
         }).orElse(lastGrams);
+    }
+
+    private static HttpClient createHttpClient(Configuration configuration) throws ConfigurationException {
+        return new DefaultHttpClient(configuration.getServerUrl(), configuration.getCredentials());
     }
 
     private static void sleep(double seconds) {

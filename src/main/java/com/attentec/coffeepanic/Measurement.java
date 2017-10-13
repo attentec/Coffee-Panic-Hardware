@@ -2,6 +2,6 @@ package com.attentec.coffeepanic;
 
 import java.util.Optional;
 
-interface Measurement {
-    Optional<Float> getGrams();
+public interface Measurement {
+    public Optional<Float> getGrams();
 }
